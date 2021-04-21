@@ -1,0 +1,128 @@
+For MySQL and MongoDB
+1	 Display all the information of the EMP table?
+MYSQL==> SELECT * FROM EMP;
+MONGO==> db.emp.find().pretty();
+
+2	 Display unique Jobs from EMP table?
+MYSQL==> SELECT DISTINCT JOB FROM EMP;
+MONGO==> db.emp.distinct("JOB");
+
+3	 List the emps in the asc order of their Salaries?
+MYSQL==> SELECT ENAME, SAL FROM EMP ORDER BY SAL;
+MONGO==> db.emp.find({},{"ENAME":1, "SAL":1}).sort({"SAL":1});
+
+4	 List the details of the emps in asc order of the Dptnos and desc of Jobs?
+MYSQL==> SELECT * FROM EMP ORDER BY Dptnos AND JOBS DESC;
+MONGO==> db.emp.find().sort({"DEPTNO":1, "JOB":-1}).pretty();
+
+5	 Display all the unique job groups in the descending order?
+MYSQL==> SELECT DISTINCT JOBS FROM EMP ORDER BY JOBS DESC;
+MONGO==> db.emp.distinct("JOB").sort({"JOB":-1});
+
+6	 Display all the details of all ‘Mgrs’
+MYSQL==> SELECT * FROM EMP WHERE JOB = 'MANAGER';
+MONGO==> db.emp.find({},{"JOB":"MANAGER"});
+
+7	 List the emps who joined before 1981
+MYSQL==> SELECT ENAME, HIREDATE FROM EMP WHERE YEAR(HIREDATE) < '1981';
+MONGO==> db.emp.find({"HIREDATE":{"$lt":('1981-1-1'}});
+
+8	 List the Empno, Ename, Sal, Daily sal of all emps in the asc order of Annsal
+MYSQL==> SELECT EMPNO, ENAME, SAL, SAL/30 AS DAILY SAL, SAL*12 AS ANNSAL FROM EMP ORDER BY SAL*12;
+MONGO==> db.emp.aggregate([{$project:{"_id":0,"EMPNO":1,"ENAME":1,"SAL":1,"DAILY_SAL":{$divide:["$SAL",30]},"ANN_SAL":{$multiply:["$SAL",12]}}},{$sort: {ANN_SAL:1}}]);
+
+9	 Display the Empno, Ename, job, Hiredate, Exp of all Mgrs
+MYSQL==> SELECT EMPNO, ENAME, JOB, HIREDATE, DATEDIFF(SYSDATE(), HIREDATE)/365 AS EXP FROM EMP WHERE JOB = 'MANAGER';
+MONGO==> db.emp.find({"":{"$in":[select mgr from emp}},{"EMPNO":1,"ENAME":1,"JOB":1,"HIREDATE":1,"timestampdiff(year":1,"HIREDATE": 1,"curdate())exp":1});
+
+10	 List the Empno, Ename, Sal, Exp of all emps working for Mgr 7369
+MYSQL==> SELECT EMPNO, ENAME, SAL, DATEDIFF(SYSDATE(), HIREDATE)/365 AS EXP FROM EMP WHERE MGR = 7369;
+MONGO==> db.emp.find({"MGR":7369},{"EMPNO":1,"ENAME":1,"SAL":1,"exp":1});
+
+11	 Display all the details of the emps whose Comm  Is more than their Sal
+MYSQL==> SELECT * FROM EMP WHERE COMM > SAL;
+MONGO==> db.emp.find({"$where": "this.COMM  > this. SAL"});
+
+13	 List the emps along with their Exp and Daily Sal is more than Rs 100
+MYSQL==> SELECT ENAME, DATEDIFF(SYSDATE(), HIREDATE)/365 AS EXP, SAL/30 AS DAILY_SAL FROM EMP WHERE SAL/30 > 100;
+MONGO==> db.emp.find({"SAL/30)":{"$gt":100}});
+
+14	 List the emps who are either ‘CLERK’ or ‘ANALYST’ in the Desc order
+MYSQL==> SELECT ENAME, JOB FROM EMP WHERE JOB = 'CLERK' OR 'ANALYST' ORDER BY JOB DESC;
+MONGO==> db.emp.find({"$or": [{"$where": "this.JOB  == this. ‘CLERK’"},{"$where":"this.JOB==this.‘ANALYST’"}]}).sort({"JOB": -1});
+
+15	 List the emps who joined on 1-MAY-81,3-DEC-81,17-DEC-81,19-JAN-80 in asc order of seniority
+MYSQL==> SELECT * FROM EMP WHERE HIREDATE IN ('1981-05-01','1981-12-03','1981-12-17','1980-01-19') ORDER BY HIREDATE;
+MONGO==> db.emp.find({"HIREDATE": {"$in":  [’01-may-81’,’03-dec-81’,’17-dec81’,’19-jan-80’] }}).sort({"HIREDATE":1});
+
+16	 List the emp who are working for the Deptno 10 or20
+MYSQL==> SELECT ENAME, DEPTNO FROM EMP WHERE DEPTNO = 10 OR 20;
+MONGO==> db.emp.find({"$or": [{"DEPTNO" :  10},{ "DEPTNO" :20}]});
+
+17	 List the emps who are joined in the year 81
+MYSQL==> SELECT ENAME, HIREDATE FROM EMP WHERE YEAR(HIREDATE) =1981;
+MONGO==> db.emp.find({},{"HIREDATE":"1981"});
+
+19	 List the emps Who Annual sal ranging from 22000 and 45000
+MYSQL==> SELECT * FROM EMP WHERE SAL*12 BETWEEN 22000 AND 45000;
+MONGO==> db.emp.aggregate([{$project:{"_id":0,"ENAME":1,"ANN_SAL":{$multiply:["$SAL",12]}}}]);
+
+20	 List the Enames those are having five characters in their Names
+MYSQL==> SELECT ENAME FROM EMP WHERE CHAR_LENGTH(ENAME) = 5;
+MONGO==> db.emp.find({"length (ENAME) " : 5},{"ENAME": 1});
+
+21	 List the Enames those are starting with ‘S’ and with five characters
+MYSQL==> SELECT ENAME FROM EMP WHERE ENAME LIKE 'S%' AND CHAR_LENGTH(ENAME)=5;
+MONGO==> db.emp.find({"$and": [{"$where": "this.ENAME  == this. ‘S%’ "},{ " length (ENAME) " :  5}]},{"ENAME": 1});
+
+22	 List the emps those are having four chars and third character must be ‘r’
+MYSQL==> SELECT ENAME FROM EMP WHERE CHAR_LENGTH(ENAME)=4 AND ENAME LIKE '__R%';
+MONGO==> db.emp.find({"$and": [{"length(ENAME) " :  4 },{ "$where": "this. ENAME  == this. ‘__R%’"}]});
+
+23	 List the Five character names starting with ‘S’ and ending with ‘H’
+MYSQL==> SELECT ENAME FROM EMP WHERE CHAR_LENGTH(ENAME) = 5 AND ENAME LIKE 'S%' AND ENAME LIKE '%H';
+MONGO==> db.emp.find({"$and": [{"length(ENAME) " :  5 },{ "$where": "this. ENAME  == this. ‘S%H’"}]});
+
+24	 List the emps who joined in January
+MYSQL==> SELECT * FROM EMP WHERE MONTH(HIREDATE) = 01;
+MONGO==> db.emp.find({"$where": "this.to_char (HIREDATE,’mon’)  == this. ‘jan’"});
+
+27	 List the emps whose names having a character set ‘ll’ together
+MYSQL==> SELECT ENAME FROM EMP WHERE ENAME LIKE '%LL%';
+MONGO==> db.emp.find({"$where": "this.ENAME  == this. ‘%LL%’"});
+
+29	 List the emps who does not belong to Deptno 20
+MYSQL==> SELECT ENAME, DEPTNO FROM EMP WHERE DEPTNO != 20;
+MONGO==> db.emp.find({"DEPTNO" : { "$ne":  20}});
+
+30	 List all the emps except ‘PRESIDENT’ & ‘MGR” in asc order of Salaries
+MYSQL==> SELECT ENAME, JOB, SAL WHERE JOB != 'PRESIDENT' AND JOB != 'MANAGER' ORDER BY SAL;
+MONGO==> db.emp.find({"JOB not ": {"$in":  [‘PRESIDENT’,’MANAGER’] }}).sort({"SAL": 1});
+
+31	 List the emps whose Empno not starting with digit78
+MYSQL==> SELECT ENAME, EMPNO WHERE EMPNO NOT LIKE '78%';
+MONGO==> db.emp.find({"EMPNO not " :  ‘78%’});
+
+33	 List the emps who are working under ‘MGR’
+MYSQL==> SELECT * FROM EMP WHERE JOB = 'MANAGER';
+MONGO==> db.EMP e ,EMP m .find({"$where": "this.e.MGR  == this.m.empno "},{"e.ENAME||‘worksfor‘||m.ENAME": 1});
+
+34	 List the emps who joined in any year but not belongs to the month of March
+MYSQL==> SELECT * FROM EMP WHERE MONTH(HIREDATE) != 03;
+MONGO==> db.emp.find({"to_char(HIREDATE,’MON’) not ": {"$in":  [‘03’}});
+
+35	 List all the Clerks of Deptno 20
+MYSQL==> SELECT * FROM EMP WHERE JOB = 'CLERK' AND DEPTNO = 20;
+MONGO==> db.emp.find({"$and": [{"$where": "this.JOB  == this.‘CLERK’ "},{ "DEPTNO" :  20}]});
+
+36	 List the emps of Deptno 30 or 10 joined in the year 1981
+MYSQL==> SELECT * FROM EMP WHERE DEPTNO=30 OR DEPTNO = 10 AND YEAR(HIREDATE) = 1981;
+MONGO==> db.emp.find({"$and": [{"to_char(HIREDATE,’YYYY’) ": {"$in":  [‘1981’] } },{"$or": [{"DEPTNO" :  30 },{ "DEPTNO" : 10 ) }]}]});
+
+37	 Display the details of SMITH
+MYSQL==> SELECT * FROM EMP WHERE ENAME = 'SMITH';
+MONGO==> db.emp.find({"ENAME" : 'SMITH'});
+
+38	 Display the location of SMITH
+MYSQL==> SELECT ENAME, LOC FROM EMP E, DEPT D WHERE E.ENAME = 'SMITH' AND E.DEPTNO = D.DEPTNO;
+MONGO==> db.EMP e , DEPT d .find({"$and": [{"$where": "this.e.ENAME  == this. ‘SMITH’ "},{ "$where": "this. e.DEPTNO  == this.d.DEPTNO "}]},{"loc": 1});
